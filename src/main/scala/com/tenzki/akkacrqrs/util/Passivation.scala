@@ -7,7 +7,7 @@ trait Passivation extends ActorLogging {
   this: Actor =>
 
   protected def passivate(receive: Receive): Receive = receive.orElse{
-    // tell parent actor to send us a PoisonPill
+    // tell parent actor to send us a Stop message
     case ReceiveTimeout =>
       log.info("{} ReceiveTimeout: passivating.", self)
       context.parent ! Passivate(stopMessage = Stop)

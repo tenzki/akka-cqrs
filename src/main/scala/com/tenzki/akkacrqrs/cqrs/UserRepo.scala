@@ -31,6 +31,9 @@ class DBUserRepo @Inject() (val dbProvider: DatabaseProvider) {
     dbProvider.db.run(users.filter(_.id === id).map(u => (u.firstName, u.lastName, u.seqNo))
       .update(firstName, lastName, seqNo))
 
+  def searchUsersByFirstName(firstName: String): Future[Seq[DBUser]] =
+    dbProvider.db.run(users.filter(_.firstName.like(s"$firstName%s")).result)
+
   private class DBUsersTable(tag: Tag) extends Table[DBUser](tag, "users") {
 
     def id = column[UUID]("id", O.PrimaryKey)

@@ -3,11 +3,10 @@ package com.tenzki.akkacrqrs
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
-import akka.routing.RoundRobinPool
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.google.inject.Guice
-import com.tenzki.akkacrqrs.cqrs.{UserService, UserProcessor, UserView, DBUserRepo}
+import com.tenzki.akkacrqrs.cqrs._
 import com.tenzki.akkacrqrs.module.{AkkaModule, ConfigModule}
 
 import scala.concurrent.duration._
@@ -42,7 +41,8 @@ class Main extends App with HttpRoutes {
   val userView = ClusterSharding(system).start(UserView.shardName, UserView.props(userRepo),
     ClusterShardingSettings(system), UserView.extractor)
 
-  val userService = system.actorOf(RoundRobinPool(5).props(UserService.props(userRepo)))
+  val userService = system.actorOf(UserService.props(), UserService.name)
+  system.actorOf(UserServiceWorker.props(userRepo), UserServiceWorker.name)
 
   val userProcessor = ClusterSharding(system).start(UserProcessor.shardName, UserProcessor.props(),
     ClusterShardingSettings(system), UserProcessor.extractor)
@@ -52,9 +52,9 @@ class Main extends App with HttpRoutes {
 
   val bindingFuture = Http().bindAndHandle(route(userProcessor, userView, userService), interface = httpHost, port = httpPort)
   println(s"Server online at http://$httpHost:$httpPort/\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
+  StdIn.readLine()
   bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete(_ => system.terminate()) // and shutdown when done
+      .flatMap(_.unbind())
+      .onComplete(_ => system.terminate())
 
 }

@@ -20,13 +20,18 @@ object CommandQueryProtocol {
   case class InvalidUserAck(userId: UUID, msg: String) extends UserAck
 
   sealed trait UserQuery extends UserMsg
+  sealed trait UserServiceQuery
 
   case class GetUserDetailsQuery(userId: UUID) extends UserQuery
-//  case class UsersQuery(query: String) extends UserQuery
+  case class SearchUsersByFirstName(firstName: String) extends UserServiceQuery
 
   sealed trait UserQueryResponse extends UserMsg
+  sealed trait UserServiceQueryResponse
 
   case class UserDetailsResponse(userId: UUID, email: String, firstName: String, lastName: String) extends UserQueryResponse
   case class InvalidUserQueryResponse(userId: UUID, message: String) extends UserQueryResponse
+
+  case class ListUser(userId: UUID, email: String, firstName: String, lastName: String)
+  case class UserListResponse(users: Seq[ListUser]) extends UserServiceQueryResponse
 
 }

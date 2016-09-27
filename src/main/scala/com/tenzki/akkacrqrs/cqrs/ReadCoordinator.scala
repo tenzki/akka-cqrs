@@ -19,6 +19,9 @@ object ReadCoordinator {
   def NAME = "read-coordinator"
 }
 
+/**
+ * Updating of read side of CQRS.
+ */
 class ReadCoordinator(userView: ActorRef) extends Actor {
 
   implicit val mat = ActorMaterializer()
