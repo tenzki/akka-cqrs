@@ -2,7 +2,7 @@ package com.tenzki.akkacrqrs.cqrs
 
 import akka.actor.{Actor, Props}
 import akka.routing.FromConfig
-import com.tenzki.akkacrqrs.cqrs.CommandQueryProtocol.{UserListResponse, SearchUsersByFirstName, UserDetails, UserServiceQuery}
+import com.tenzki.akkacrqrs.cqrs.CommandQueryProtocol.{ListUser, UserListResponse, SearchUsersByFirstName, UserServiceQuery}
 
 object UserService {
 
@@ -36,7 +36,7 @@ class UserServiceWorker(userRepo: DBUserRepo) extends Actor {
     case SearchUsersByFirstName(firstName: String) =>
       implicit val ec = context.dispatcher
       val result = userRepo.searchUsersByFirstName(firstName)
-        .map(_.map(user => UserDetails(user.id, user.email, user.firstName, user.lastName))).map(UserListResponse)
+        .map(_.map(user => ListUser(user.id, user.email, user.firstName, user.lastName))).map(UserListResponse)
       pipe(result).to(sender())
   }
 
